@@ -9,7 +9,7 @@ const Product = sequelize.define('product', {
         autoIncrement: true,
         field: 'id_product'
     },
-    product_code: {
+    code: {
       type: DataTypes.STRING(9),
       allowNull: false,
       field: 'product_code',
