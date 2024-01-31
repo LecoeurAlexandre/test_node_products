@@ -6,7 +6,8 @@ const productController = {
     list: async (req, res) => {
         try {
             const products = await Product.findAll();
-            res.json(products);
+            const productsWithStatus = products.map(product => addPropertiesToObject(product, defineInventoryStatus(product.quantity)))
+            res.json(productsWithStatus);
         } catch (error) {
             console.trace(error);
             res.status(500).json({
@@ -21,7 +22,8 @@ const productController = {
             const product = await Product.findByPk(id);
 
             if(product) {
-                res.json(product);
+                const combinedObject = addPropertiesToObject (product, defineInventoryStatus(product.quantity))
+                res.json(combinedObject);
             } else {
                 res.status(404).json(`No product with id ${id}`);
             }
@@ -57,7 +59,6 @@ const productController = {
             });
 
             const combinedObject = addPropertiesToObject (newProduct, defineInventoryStatus(newProduct.quantity))
-            
             res.json(combinedObject);
         } catch (error) {
             console.trace (error);
@@ -97,7 +98,8 @@ const productController = {
                     product.rating = req.body.rating;
                 }
                 const productSaved = await product.save();
-                res.json(productSaved);
+                const combinedObject = addPropertiesToObject (productSaved, defineInventoryStatus(productSaved.quantity))
+                res.json(combinedObject);
             } else {
                 res.status(404).json(`No product with id ${id}`);
             }
