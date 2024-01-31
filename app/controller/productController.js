@@ -1,3 +1,4 @@
+const { Sequelize } = require('sequelize');
 const {Product} = require('../model/productModel');
 const { defineInventoryStatus } = require('../util/inventoryUtil');
 const { addPropertiesToObject } = require('../util/responseConstructorUtil');
@@ -61,10 +62,23 @@ const productController = {
             const combinedObject = addPropertiesToObject (newProduct, defineInventoryStatus(newProduct.quantity))
             res.json(combinedObject);
         } catch (error) {
-            console.trace (error);
-            res.status(500).json({
-                message: 'Server error'
-            })
+            if (error instanceof Sequelize.ValidationError) {
+                // Gérer les erreurs de validation
+                const validationErrors = error.errors.map(err => ({
+                    field: err.path,
+                    message: err.message
+                }));
+    
+                res.status(400).json({
+                    message: 'Validation error',
+                    errors: validationErrors
+                });
+            } else {
+                console.trace(error);
+                res.status(500).json({
+                    message: 'Server error'
+                });
+            }
         }
     },
     
@@ -97,17 +111,31 @@ const productController = {
                 if (req.body.rating) {
                     product.rating = req.body.rating;
                 }
-                const productSaved = await product.save();
-                const combinedObject = addPropertiesToObject (productSaved, defineInventoryStatus(productSaved.quantity))
+                await product.update(req.body);
+                const settedProduct = await Product.findByPk(id);
+                const combinedObject = addPropertiesToObject (settedProduct, defineInventoryStatus(settedProduct.quantity))
                 res.json(combinedObject);
             } else {
                 res.status(404).json(`No product with id ${id}`);
             }
         } catch (error) {
-            console.trace(error);
-            res.status(500).json({
-            message: 'Server error'
-            });
+            if (error instanceof Sequelize.ValidationError) {
+                // Gérer les erreurs de validation
+                const validationErrors = error.errors.map(err => ({
+                    field: err.path,
+                    message: err.message
+                }));
+    
+                res.status(400).json({
+                    message: 'Validation error',
+                    errors: validationErrors
+                });
+            } else {
+                console.trace(error);
+                res.status(500).json({
+                    message: 'Server error'
+                });
+            }
         }
     },
 
