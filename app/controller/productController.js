@@ -1,4 +1,6 @@
 const {Product} = require('../model/productModel');
+const { defineInventoryStatus } = require('../util/inventoryUtil');
+const { addPropertiesToObject } = require('../util/responseConstructorUtil');
 
 const productController = {
     list: async (req, res) => {
@@ -53,14 +55,76 @@ const productController = {
                 img: req.body.img,
                 rating: req.body.rating
             });
-            res.json(newProduct);
+
+            const combinedObject = addPropertiesToObject (newProduct, defineInventoryStatus(newProduct.quantity))
+            
+            res.json(combinedObject);
         } catch (error) {
             console.trace (error);
             res.status(500).json({
                 message: 'Server error'
             })
         }
-    } 
+    },
+    
+    update: async (req, res) => {
+        try {
+            const id = req.params.id;
+            const product = await Product.findByPk(id);
+            if (product) {
+                if (req.body.code) {
+                    product.code = req.body.code;
+                }
+                if (req.body.name) {
+                    product.name = req.body.name;
+                }
+                if (req.body.description) {
+                    product.description = req.body.description;
+                }
+                if (req.body.price) {
+                    product.price = req.body.price;
+                }
+                if (req.body.quantity) {
+                    product.quantity = req.body.quantity;
+                }
+                if (req.body.category) {
+                    product.category = req.body.category;
+                }
+                if (req.body.img) {
+                    product.img = req.body.img;
+                }
+                if (req.body.rating) {
+                    product.rating = req.body.rating;
+                }
+                const productSaved = await product.save();
+                res.json(productSaved);
+            } else {
+                res.status(404).json(`No product with id ${id}`);
+            }
+        } catch (error) {
+            console.trace(error);
+            res.status(500).json({
+            message: 'Server error'
+            });
+        }
+    },
 
+    delete: async (req, res) => {
+        try {
+            const id = req.params.id;
+            const product = await Product.findByPk(id);
+            if (product) {
+                await product.destroy();
+                res.json('Product deleted.');
+            } else {
+                res.status(404).json(`No product with id ${id}`);
+            }
+        } catch (error) {
+            console.trace(error);
+            res.status(500).json({
+            message: 'Server error'
+            });
+        }
+    }
 };
 module.exports = productController
