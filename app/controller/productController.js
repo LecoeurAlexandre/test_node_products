@@ -63,7 +63,6 @@ const productController = {
             res.json(combinedObject);
         } catch (error) {
             if (error instanceof Sequelize.ValidationError) {
-                // Gérer les erreurs de validation
                 const validationErrors = error.errors.map(err => ({
                     field: err.path,
                     message: err.message
@@ -120,7 +119,6 @@ const productController = {
             }
         } catch (error) {
             if (error instanceof Sequelize.ValidationError) {
-                // Gérer les erreurs de validation
                 const validationErrors = error.errors.map(err => ({
                     field: err.path,
                     message: err.message
